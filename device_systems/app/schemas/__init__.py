@@ -1,4 +1,4 @@
 """
 Schemas de Pydantic para validación de datos
 """
-from .user_schema import UserCreate, UserResponse, UserQuery
+from app.schemas.user_schema import UserCreate, UserResponse, UserQuery

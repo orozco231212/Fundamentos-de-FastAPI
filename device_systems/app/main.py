@@ -4,7 +4,7 @@ API REST para gestión de usuarios
 """
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from .routes import router as users_router
+from app.routes.user_routes import router as users_router
 
 # Crear instancia de FastAPI
 app = FastAPI(

@@ -3,7 +3,7 @@ Rutas para la gestión de usuarios
 """
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional, Literal
-from ..schemas import UserCreate, UserResponse, UserQuery
+from app.schemas.user_schema import UserCreate, UserResponse, UserQuery
 
 router = APIRouter(
     prefix="/users",
