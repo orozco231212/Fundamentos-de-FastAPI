@@ -1,31 +1,40 @@
-"""
-Schemas de Pydantic v2 para validación de datos de usuarios
-"""
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, Literal
+"""Modelos Pydantic para validar usuarios de la API."""
+
+from enum import Enum
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    SUPPORT = "support"
+    USER = "user"
 
 
 class UserCreate(BaseModel):
-    """Esquema para crear un nuevo usuario"""
-    name: str = Field(..., min_length=3, description="Nombre del usuario (mínimo 3 caracteres)")
-    email: EmailStr = Field(..., description="Email válido del usuario")
-    role: Literal["admin", "support", "user"] = Field(..., description="Rol del usuario")
-    is_active: bool = Field(default=True, description="Estado del usuario")
+    """Datos recibidos al registrar un usuario."""
+
+    name: str = Field(min_length=3, description="Nombre del usuario")
+    email: EmailStr = Field(description="Correo electrónico válido")
+    role: UserRole = Field(description="Rol permitido del usuario")
+    is_active: bool = Field(default=True, description="Indica si el usuario está activo")
+
+    @field_validator("name")
+    @classmethod
+    def name_must_have_text(cls, value: str) -> str:
+        normalized_name = " ".join(value.split())
+        if len(normalized_name) < 3:
+            raise ValueError("El nombre debe contener al menos 3 caracteres")
+        return normalized_name
 
 
 class UserResponse(BaseModel):
-    """Esquema de respuesta para usuarios"""
-    id: int = Field(..., description="ID único del usuario")
-    name: str = Field(..., description="Nombre del usuario")
-    email: EmailStr = Field(..., description="Email del usuario")
-    role: str = Field(..., description="Rol del usuario")
-    is_active: bool = Field(..., description="Estado del usuario")
+    """Representación pública de un usuario."""
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
-
-class UserQuery(BaseModel):
-    """Esquema para parámetros de consulta"""
-    role: Optional[Literal["admin", "support", "user"]] = Field(None, description="Filtrar por rol")
-    is_active: Optional[bool] = Field(None, description="Filtrar por estado activo/inactivo")
+    id: int
+    name: str
+    email: EmailStr
+    role: UserRole
+    is_active: bool

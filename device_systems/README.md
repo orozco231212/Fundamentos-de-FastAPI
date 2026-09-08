@@ -1,483 +1,139 @@
-# device_systems API REST - Gestión de Usuarios
+# device_systems
 
-## Descripción de la aplicación
+API REST para la gestión de usuarios, construida con FastAPI y Pydantic v2 para la evidencia GA1-220501096-01-AA1-EV07.
 
-**device_systems** es una aplicación backend desarrollada con **FastAPI** que implementa una API REST funcional para administrar usuarios del sistema. La aplicación aplica conceptos fundamentales de FastAPI incluyendo validación de datos con Pydantic v2, parámetros de ruta, parámetros de consulta, respuestas HTTP estructuradas y cabeceras personalizadas.
+## Requisitos
 
-### Características principales:
-- ✅ API REST completamente documentada con Swagger UI
-- ✅ Validación de datos con Pydantic v2
-- ✅ Path Parameters y Query Parameters
-- ✅ Response Models para estandarizar respuestas
-- ✅ Cabeceras HTTP personalizadas
-- ✅ Manejo de errores HTTP
-- ✅ Autenticación de datos con validadores
+- Python 3.10 o superior
+- pip
+- Postman, Thunder Client o curl
 
----
+## Instalación y ejecución en Windows
 
-## Requisitos previos
+Después de clonar el repositorio, entra a la carpeta del proyecto:
 
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
-- Git (para clonar el repositorio)
-- Un cliente HTTP como Postman, Thunder Client o curl
-
----
-
-## Instalación de dependencias
-
-### 1. Clonar el repositorio
-
-```bash
+```powershell
 git clone https://github.com/orozco231212/Fundamentos-de-FastAPI-API-REST-para-Gesti-n-de-Usuarios.git
-cd device_systems
+cd Fundamentos-de-FastAPI-API-REST-para-Gesti-n-de-Usuarios\device_systems
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
 ```
 
-### 2. Crear un entorno virtual (recomendado)
+Si PowerShell bloquea la activación del entorno, ejecuta el servidor directamente:
 
-```bash
-# En Windows
-python -m venv venv
-venv\Scripts\activate
-
-# En macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
+```powershell
+.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-### 3. Instalar las dependencias
+La API queda disponible en `http://127.0.0.1:8000`.
 
-```bash
-pip install -r requirements.txt
-```
+Documentación interactiva:
 
----
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
 
-## Ejecución del servidor
+Para detener el servidor: `Ctrl+C`.
 
-### Opción 1: Ejecutar directamente con Python
+## Estructura
 
-```bash
-python -m app.main
-```
-
-### Opción 2: Ejecutar con uvicorn
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### Opción 3: Ejecutar en un puerto específico
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-La API estará disponible en: **http://localhost:8000**
-
----
-
-## Documentación interactiva
-
-Una vez iniciado el servidor, accede a:
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
----
-
-## Tabla de Endpoints
-
-| Método | Endpoint | Descripción | Path Params | Query Params |
-|--------|----------|-------------|-------------|--------------|
-| GET | `/users` | Listar todos los usuarios | - | `role`, `is_active` |
-| GET | `/users/{user_id}` | Obtener un usuario por ID | `user_id` | - |
-| POST | `/users` | Crear un nuevo usuario | - | - |
-| GET | `/health` | Health check de la API | - | - |
-| GET | `/` | Información de la API | - | - |
-
----
-
-## Modelo de Usuario
-
-### Campos obligatorios:
-- **id**: Número entero único (generado automáticamente)
-- **name**: Cadena de texto, mínimo 3 caracteres
-- **email**: Correo electrónico válido y único
-- **role**: Uno de: `admin`, `support`, `user`
-- **is_active**: Booleano (true/false)
-
-### Validaciones implementadas:
-✓ El nombre debe tener mínimo 3 caracteres  
-✓ El email debe ser válido  
-✓ El email debe ser único en el sistema  
-✓ El role debe ser uno de los valores permitidos  
-✓ is_active es un valor booleano
-
----
-
-## Ejemplos de peticiones
-
-### 1. GET - Listar todos los usuarios
-
-**Petición:**
-```bash
-curl http://localhost:8000/users
-```
-
-**Respuesta (200 OK):**
-```json
-[
-  {
-    "id": 1,
-    "name": "Juan Pérez",
-    "email": "juan@example.com",
-    "role": "admin",
-    "is_active": true
-  },
-  {
-    "id": 2,
-    "name": "María García",
-    "email": "maria@example.com",
-    "role": "user",
-    "is_active": true
-  }
-]
-```
-
----
-
-### 2. GET - Obtener usuario por ID (Path Parameter)
-
-**Petición:**
-```bash
-curl http://localhost:8000/users/1
-```
-
-**Respuesta (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Juan Pérez",
-  "email": "juan@example.com",
-  "role": "admin",
-  "is_active": true
-}
-```
-
-**Respuesta si no existe (404):**
-```json
-{
-  "detail": "Usuario con ID 999 no encontrado"
-}
-```
-
----
-
-### 3. GET - Filtrar usuarios por rol (Query Parameter)
-
-**Petición:**
-```bash
-curl "http://localhost:8000/users?role=admin"
-```
-
-**Respuesta (200 OK):**
-```json
-[
-  {
-    "id": 1,
-    "name": "Juan Pérez",
-    "email": "juan@example.com",
-    "role": "admin",
-    "is_active": true
-  }
-]
-```
-
----
-
-### 4. GET - Filtrar usuarios por estado activo/inactivo (Query Parameter)
-
-**Petición:**
-```bash
-curl "http://localhost:8000/users?is_active=true"
-```
-
-**Respuesta (200 OK):**
-```json
-[
-  {
-    "id": 1,
-    "name": "Juan Pérez",
-    "email": "juan@example.com",
-    "role": "admin",
-    "is_active": true
-  },
-  {
-    "id": 2,
-    "name": "María García",
-    "email": "maria@example.com",
-    "role": "user",
-    "is_active": true
-  }
-]
-```
-
----
-
-### 5. GET - Filtrar combinando parámetros
-
-**Petición:**
-```bash
-curl "http://localhost:8000/users?role=user&is_active=true"
-```
-
-**Respuesta (200 OK):**
-```json
-[
-  {
-    "id": 2,
-    "name": "María García",
-    "email": "maria@example.com",
-    "role": "user",
-    "is_active": true
-  }
-]
-```
-
----
-
-### 6. POST - Crear un nuevo usuario
-
-**Petición:**
-```bash
-curl -X POST http://localhost:8000/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Pedro Rodríguez",
-    "email": "pedro@example.com",
-    "role": "user",
-    "is_active": true
-  }'
-```
-
-**Respuesta (201 Created):**
-```json
-{
-  "id": 4,
-  "name": "Pedro Rodríguez",
-  "email": "pedro@example.com",
-  "role": "user",
-  "is_active": true
-}
-```
-
----
-
-### 7. POST - Error: Email duplicado
-
-**Petición:**
-```bash
-curl -X POST http://localhost:8000/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Nuevo Usuario",
-    "email": "juan@example.com",
-    "role": "user",
-    "is_active": true
-  }'
-```
-
-**Respuesta (400 Bad Request):**
-```json
-{
-  "detail": "El email ya está registrado en el sistema"
-}
-```
-
----
-
-### 8. POST - Error: Validación fallida
-
-**Petición (nombre muy corto):**
-```bash
-curl -X POST http://localhost:8000/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "AB",
-    "email": "usuario@example.com",
-    "role": "user",
-    "is_active": true
-  }'
-```
-
-**Respuesta (422 Unprocessable Entity):**
-```json
-{
-  "detail": [
-    {
-      "loc": ["body", "name"],
-      "msg": "String should have at least 3 characters",
-      "type": "string_too_short"
-    }
-  ]
-}
-```
-
----
-
-### 9. POST - Error: Email inválido
-
-**Petición:**
-```bash
-curl -X POST http://localhost:8000/users \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Usuario Nuevo",
-    "email": "email-invalido",
-    "role": "user",
-    "is_active": true
-  }'
-```
-
-**Respuesta (422 Unprocessable Entity):**
-```json
-{
-  "detail": [
-    {
-      "loc": ["body", "email"],
-      "msg": "value is not a valid email address: The email address is not valid",
-      "type": "value_error"
-    }
-  ]
-}
-```
-
----
-
-## Cabeceras HTTP personalizadas
-
-Cada respuesta incluye las siguientes cabeceras personalizadas:
-
-```
-X-App-Name: device_systems
-X-API-Version: 1.0
-X-Powered-By: FastAPI
-```
-
----
-
-## Estructura del proyecto
-
-```
+```text
 device_systems/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py              # Aplicación principal
-│   ├── schemas/
-│   │   ├── __init__.py
-│   │   └── user_schema.py   # Modelos Pydantic
-│   └── routes/
-│       ├── __init__.py
-│       └── user_routes.py   # Endpoints de usuarios
-├── requirements.txt         # Dependencias del proyecto
-└── README.md               # Este archivo
+│   ├── main.py
+│   ├── routes/
+│   │   └── user_routes.py
+│   └── schemas/
+│       └── user_schema.py
+├── tests/
+│   └── test_users.py
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
 
----
+La información se almacena temporalmente en memoria. Al reiniciar el servidor, los usuarios creados mediante POST se reinician.
 
-## Tecnologías utilizadas
+## Endpoints
 
-- **FastAPI**: Framework web moderno para construir APIs REST con Python
-- **Pydantic v2**: Validación de datos y serialización
-- **Uvicorn**: Servidor ASGI de alto rendimiento
-- **Python 3.8+**: Lenguaje de programación
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/` | Información general de la API |
+| GET | `/health` | Estado del servicio |
+| GET | `/users` | Lista todos los usuarios |
+| GET | `/users/{user_id}` | Consulta un usuario por ID |
+| GET | `/users?role=admin` | Filtra por rol |
+| GET | `/users?is_active=true` | Filtra por estado |
+| POST | `/users` | Registra un usuario |
 
----
+Todas las respuestas incluyen `X-App-Name: device_systems` y `X-API-Version: 1.0`.
 
-## Conceptos aprendidos
+## Modelo y validaciones
 
-### 1. **Introducción a FastAPI**
-FastAPI es un framework web moderno que facilita la construcción de APIs REST de alta calidad con validación automática y documentación interactiva.
+El cuerpo de `POST /users` acepta:
 
-### 2. **Métodos HTTP**
-- **GET**: Obtener recursos (datos de usuarios)
-- **POST**: Crear nuevos recursos (nuevo usuario)
-
-### 3. **Path Parameters**
-Se utilizan para identificar recursos específicos:
-```python
-@app.get("/users/{user_id}")
+```json
+{
+  "name": "Ana Torres",
+  "email": "ana.torres@example.com",
+  "role": "support",
+  "is_active": true
+}
 ```
 
-### 4. **Query Parameters**
-Se utilizan para filtrar o modificar la consulta:
-```python
-@app.get("/users")  # ?role=admin&is_active=true
+- `name` es obligatorio y debe tener mínimo 3 caracteres.
+- `email` debe tener formato válido y no repetirse.
+- `role` solo acepta `admin`, `support` o `user`.
+- `is_active` es booleano y por defecto vale `true`.
+- `id` se genera automáticamente y se entrega mediante `UserResponse`.
+
+## Pruebas rápidas
+
+```powershell
+curl http://127.0.0.1:8000/users
+curl http://127.0.0.1:8000/users/1
+curl "http://127.0.0.1:8000/users?role=admin&is_active=true"
+curl -X POST http://127.0.0.1:8000/users -H "Content-Type: application/json" -d '{"name":"Ana Torres","email":"ana.torres@example.com","role":"support","is_active":true}'
 ```
 
-### 5. **Validación con Pydantic v2**
-Los modelos de Pydantic validan automáticamente los datos de entrada, asegurando que cumplan con los requisitos especificados.
+Ejecutar la suite automatizada desde la carpeta del repositorio:
 
-### 6. **Response Models**
-Definen la estructura de las respuestas, ocultando datos internos innecesarios y estandarizando las respuestas de la API.
+```powershell
+.venv\Scripts\python.exe -m pytest tests -q
+```
 
-### 7. **Cabeceras HTTP**
-Se utilizan para pasar información adicional entre cliente y servidor. En este caso, información sobre la aplicación y versión de la API.
+Casos cubiertos: listado y cabeceras, filtros, búsqueda por ID, creación, rechazo de correo duplicado y validación de nombre corto.
 
-### 8. **Manejo de errores**
-FastAPI facilita retornar códigos de error HTTP apropiados (404, 400, 422, etc.) con mensajes descriptivos.
+## Organizar y subir cambios a GitHub
 
----
+Ejecuta estos comandos desde la carpeta raíz del repositorio, donde está `device_systems`:
 
-## Pruebas con herramientas
+```powershell
+git status
+git add device_systems
+git commit -m "Completar API REST de usuarios con FastAPI"
+git push origin main
+```
 
-### Usando Swagger UI
-1. Inicia el servidor
-2. Abre http://localhost:8000/docs en tu navegador
-3. Prueba todos los endpoints interactivamente
+Antes del `commit`, revisa `git status` y confirma que no aparezcan `.venv`, `__pycache__` ni `.pytest_cache`. Esos archivos están excluidos mediante `.gitignore` y no deben subirse.
 
-### Usando Postman
-1. Crea una nueva colección
-2. Importa los endpoints en Postman
-3. Prueba cada endpoint con diferentes datos
+## Respuestas de error
 
-### Usando Thunder Client (extensión de VS Code)
-1. Instala Thunder Client en VS Code
-2. Crea solicitudes HTTP
-3. Prueba los endpoints directamente
+- `404`: usuario inexistente.
+- `409`: correo ya registrado.
+- `422`: datos que no cumplen el modelo Pydantic.
 
-### Usando curl
-Consulta la sección "Ejemplos de peticiones" para comandos curl completos.
+## Evidencias para la entrega
 
----
+En Swagger UI, ejecutar y capturar:
 
-## Reflexión sobre FastAPI
+1. `GET /users`.
+2. `GET /users/{user_id}` con un ID existente y otro inexistente.
+3. `GET /users` usando `role` e `is_active`.
+4. `POST /users` exitoso.
+5. `POST /users` con correo duplicado y datos inválidos.
 
-FastAPI es una herramienta poderosa que revoluciona el desarrollo de APIs en Python. Sus principales ventajas incluyen:
+## Reflexión
 
-1. **Validación automática**: Pydantic valida los datos automáticamente
-2. **Documentación interactiva**: Swagger UI se genera automáticamente
-3. **Performance**: Comparable con Node.js y Go
-4. **Type hints**: Soporte nativo de type hints de Python
-5. **Seguridad**: Implementación automática de seguridad
-6. **Facilidad de uso**: Curva de aprendizaje baja
-7. **Comunidad activa**: Comunidad grande y en crecimiento
-
-FastAPI es ideal para construir APIs REST modernas y escalables de forma rápida y segura.
-
----
-
-## Autor
-
-Desarrollado como parte de la formación SENA en Fundamentos de FastAPI.
-
-## Licencia
-
-MIT
-
----
-
-## Contacto
-
-Para preguntas o sugerencias, contacta al desarrollador.
+FastAPI permite declarar rutas, parámetros y modelos de validación en un código breve. Pydantic verifica automáticamente la entrada y FastAPI genera Swagger UI a partir de esas declaraciones, lo que facilita probar y documentar la API durante el desarrollo.
