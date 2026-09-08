@@ -1,9 +1,10 @@
-"""
-Rutas para la gestión de usuarios
-"""
-from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional, Literal
-from app.schemas.user_schema import UserCreate, UserResponse, UserQuery
+"""Endpoints REST para la gestión de usuarios."""
+
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query, status
+
+from app.schemas.user_schema import UserCreate, UserResponse, UserRole
 
 router = APIRouter(
     prefix="/users",
@@ -11,8 +12,7 @@ router = APIRouter(
     responses={404: {"description": "Usuario no encontrado"}},
 )
 
-# Base de datos simulada en memoria
-users_db: List[dict] = [
+users_db: list[dict] = [
     {
         "id": 1,
         "name": "Juan Pérez",
@@ -36,15 +36,14 @@ users_db: List[dict] = [
     }
 ]
 
-# Contador para IDs
 next_id = 4
 
 
-@router.get("/", response_model=List[UserResponse], summary="Listar todos los usuarios")
+@router.get("", response_model=list[UserResponse], summary="Listar usuarios")
 async def get_users(
-    role: Optional[Literal["admin", "support", "user"]] = Query(None, description="Filtrar por rol"),
-    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo")
-):
+    role: Annotated[UserRole | None, Query(description="Filtrar por rol")] = None,
+    is_active: Annotated[bool | None, Query(description="Filtrar por estado")] = None,
+) -> list[dict]:
     """
     Obtiene la lista de todos los usuarios con opciones de filtrado.
     
@@ -52,18 +51,18 @@ async def get_users(
     - **is_active**: Filtrar por estado (true/false)
     """
     result = users_db.copy()
-    
-    if role:
-        result = [u for u in result if u["role"] == role]
-    
+
+    if role is not None:
+        result = [user for user in result if user["role"] == role.value]
+
     if is_active is not None:
-        result = [u for u in result if u["is_active"] == is_active]
-    
+        result = [user for user in result if user["is_active"] == is_active]
+
     return result
 
 
 @router.get("/{user_id}", response_model=UserResponse, summary="Obtener usuario por ID")
-async def get_user(user_id: int):
+async def get_user(user_id: int) -> dict:
     """
     Obtiene un usuario específico por su ID.
     
@@ -71,7 +70,7 @@ async def get_user(user_id: int):
     """
     user = next((u for u in users_db if u["id"] == user_id), None)
     
-    if not user:
+    if user is None:
         raise HTTPException(
             status_code=404,
             detail=f"Usuario con ID {user_id} no encontrado"
@@ -80,8 +79,8 @@ async def get_user(user_id: int):
     return user
 
 
-@router.post("/", response_model=UserResponse, status_code=201, summary="Crear nuevo usuario")
-async def create_user(user: UserCreate):
+@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED, summary="Crear usuario")
+async def create_user(user: UserCreate) -> dict:
     """
     Crea un nuevo usuario en el sistema.
     
@@ -93,19 +92,17 @@ async def create_user(user: UserCreate):
     """
     global next_id
     
-    # Validar que el email no exista
-    if any(u["email"] == user.email for u in users_db):
+    if any(existing_user["email"] == str(user.email) for existing_user in users_db):
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_409_CONFLICT,
             detail="El email ya está registrado en el sistema"
         )
     
-    # Crear nuevo usuario
     new_user = {
         "id": next_id,
         "name": user.name,
-        "email": user.email,
-        "role": user.role,
+        "email": str(user.email),
+        "role": user.role.value,
         "is_active": user.is_active
     }
     
